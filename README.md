@@ -1,4 +1,4 @@
-# {Talk Title}
+# Build Your Own (Simple) Static Code Analyzer
 
 [Slides](https://stefaniemolin.com/{repo}/#/) for {description or link to description on my website).
 
