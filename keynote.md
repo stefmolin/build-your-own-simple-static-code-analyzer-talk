@@ -1125,3 +1125,131 @@ str
     __description__
 """
 ```
+
+---
+
+### Injecting docstring templates into source code
+
+Suggestions are great, but we can do better.
+
+---
+
+#### Modifying the AST to inject docstrings
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Instead of reporting that docstrings are missing, we will add docstring templates to the code:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    To edit the AST, we need to subclass <code>ast.NodeTransformer</code>, which inherits from <code>ast.NodeVisitor</code>, this time:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    In the <code>_handle_missing_docstring()</code> method, we will add a node to the function body with the docstring:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    It will be an <code>ast.Expr</code> node with an <code>ast.Constant</code> node containing the docstring itself:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    The docstring AST node will be first entry in the <code>ast.FunctionDef</code> node's <code>body</code> field:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    Since AST nodes all store references to their line numbers in the source code, we fix them after making insertions:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    The <code>_visit_helper()</code> method will call <code>_handle_missing_docstring()</code> and make sure we perform a complete traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="6">
+    Note that we now return the node. If we don't return it, the node will be removed from the AST:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="7">
+    For this example, we will just visit function nodes since we only have docstring suggestions for those:
+  </p>
+</div>
+
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-42|3|5-23|9-18|20|21|25-32|31|33-41" data-fragment-index="0">
+from textwrap import indent
+
+class DocstringTransformer(ast.NodeTransformer):
+
+    def _handle_missing_docstring(
+        self, node: ast.AsyncFunctionDef | ast.FunctionDef
+    ) -> None:
+        if ast.get_docstring(node) is None:
+            suggestion = suggest_docstring(node)
+            prefix = ' ' * (node.col_offset + 4)
+            docstring_node = ast.Expr(
+                ast.Constant(
+                    indent(
+                        suggestion[3:-3] + f'{prefix}',
+                        prefix,
+                    )
+                )
+            )
+
+            node.body.insert(0, docstring_node)
+            node = ast.fix_missing_locations(node)
+
+        return node
+
+    def _visit_helper(
+        self,
+        node: ast.AsyncFunctionDef | ast.FunctionDef
+    ) -> ast.AsyncFunctionDef | ast.FunctionDef:
+        node = self._handle_missing_docstring(node)
+        self.generic_visit(node)
+        return node
+
+    def visit_AsyncFunctionDef(
+        self, node: ast.AsyncFunctionDef
+    ) -> ast.AsyncFunctionDef:
+        return self._visit_helper(node)
+
+    def visit_FunctionDef(
+        self, node: ast.FunctionDef
+    ) -> ast.FunctionDef:
+        return self._visit_helper(node)
+</code></pre>
+
+---
+
+We can use the `ast.unparse()` function to convert from an AST back into source code, but note that formatting may be a little different:
+
+```pycon [highlight-lines="1-3|4-36|6-20|22-36"][class="hide-line-numbers"]
+>>> transformer = DocstringTransformer()
+>>> tree = transformer.visit(tree)
+>>> print(ast.unparse(tree))
+class Greeter:
+
+    def __init__(self, enthusiasm: int=1) -> None:
+        """
+        ___description___
+
+        Parameters
+        ----------
+        enthusiasm : int, default 1
+            __description__
+
+        Returns
+        -------
+        None
+            __description__
+        """
+        self.enthusiasm = enthusiasm
+
+    def greet(self, name: str='World') -> str:
+        """
+        ___description___
+
+        Parameters
+        ----------
+        name : str, default World
+            __description__
+
+        Returns
+        -------
+        str
+            __description__
+        """
+        return f"Hello, {name}{'!' * self.enthusiasm}"
+```
