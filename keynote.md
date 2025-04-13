@@ -137,6 +137,9 @@ Analyze code **without** executing it
     Automatic Python syntax upgrade tools like <code>pyupgrade</code>
   </li>
   <li class="fragment fade-in">
+    Type checkers like <code>mypy</code>
+  </li>
+  <li class="fragment fade-in">
     Code security tools like <code>bandit</code>
   </li>
   <li class="fragment fade-in">
@@ -517,3 +520,522 @@ greet is missing a docstring
 <div class="center">
   <img width="85%" src="./media/traversal-animation.gif" alt="Complete traversal of the AST for greet.py visualized with Graphviz"/>
 </div>
+
+---
+
+## Disambiguating docstring paths
+
+`greet` could be the `greet()` method or the `greet` module, but `greet.Greeter.greet` can only be one:
+
+```
+greet is missing a docstring
+```
+
+---
+
+### Tracking node ancestry with a stack
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    From a node, we can access its children, but not its parent.
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    We can track lineage with a stack:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We internalize the missing docstring check as <code>_detect_missing_docstring()</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    It uses the stack to print the unambiguous path to the missing docstring:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    The <code>_visit_helper()</code> takes care of pushing onto and popping off of the stack:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    We push (append) a node onto the stack before we actually visit it:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="5">
+    We pop the node off the stack after we have visited it and all of its descendants:
+  </p>
+</div>
+
+<div class="fragment" data-fragment-index="0">
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="3-6|8-17|16|19-31|26-28|31" data-fragment-index="1">
+class DocstringVisitor(ast.NodeVisitor):
+
+    def __init__(self, module_name: str) -> None:
+        super().__init__()
+        self.stack: list[str] = []
+        self.module_name: str = module_name
+
+    def _detect_missing_docstring(
+        self,
+        node: ast.AsyncFunctionDef
+        | ast.ClassDef
+        | ast.FunctionDef
+        | ast.Module
+    ) -> None:
+        if ast.get_docstring(node) is None:
+            entity = '.'.join(self.stack)
+            print(f'{entity} is missing a docstring')
+
+    def _visit_helper(
+        self,
+        node: ast.AsyncFunctionDef
+        | ast.ClassDef
+        | ast.FunctionDef
+        | ast.Module
+    ) -> None:
+        self.stack.append(
+            getattr(node, 'name', self.module_name)
+        )
+        self._detect_missing_docstring(node)
+        self.generic_visit(node)
+        self.stack.pop()
+
+    def visit_AsyncFunctionDef(
+        self, node: ast.AsyncFunctionDef
+    ) -> None:
+        self._visit_helper(node)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._visit_helper(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self._visit_helper(node)
+
+    def visit_Module(self, node: ast.Module) -> None:
+        self._visit_helper(node)
+</code></pre></div>
+
+[notes]
+### Other uses for stacks
+
+- determine whether a `ast.FunctionDef` node is a standalone function or method of a class
+- detect when a function or class is nested
+- check whether a function definition has a `return` statement (and therefore should be documented), despite not having a return type annotation
+
+
+---
+
+Now, we know exactly where the docstrings are missing:
+
+```pycon [highlight-lines="3-6"][class="hide-line-numbers"]
+>>> visitor = DocstringVisitor('greet')
+>>> visitor.visit(tree)
+greet is missing a docstring
+greet.Greeter is missing a docstring
+greet.Greeter.__init__ is missing a docstring
+greet.Greeter.greet is missing a docstring
+```
+
+---
+
+## Suggesting docstring templates
+
+`ast.FunctionDef` and `ast.AsyncFunctionDef` nodes have information that often ends up in the docstring:
+
+<ul>
+  <li class="fragment"><code>args</code>: Argument names, types, and defaults</li>
+  <li class="fragment"><code>returns</code>: Return type annotation (if present)</li>
+  <li class="fragment"><code>body</code>: AST of function body to infer return types/yields/raises (out of scope)</li>
+</ul>
+
+<p class="fragment">We will focus on fully-typed code for this keynote.</p>
+
+---
+
+### An example using the `Greeter.greet()` method
+
+```python [highlight-lines="5-6"][class="hide-line-numbers"]
+class Greeter:
+    def __init__(self, enthusiasm: int = 1) -> None:
+        self.enthusiasm = enthusiasm
+
+    def greet(self, name: str = 'World') -> str:
+        return f'Hello, {name}{"!" * self.enthusiasm}'
+```
+
+---
+
+<div class="center">
+    <img width="450" src="./media/greet-method-full-attributes.svg" alt="The AST the Greeter.greet() method visualized with Graphviz with fields">
+    <br/>
+    <small>The arguments are on the left branch, the function body is in the middle, and the return annotation is on the right branch.</small>
+</div>
+
+---
+
+### `ast.arguments`
+
+|field|type|description|
+|---|---|---|
+|<code>posonlyargs</code>|<code>list[ast.arg]</code>|positional-only arguments|
+|<code>args</code>|<code>list[ast.arg]</code>|arguments that can be passed positionally or by keyword|
+|<code>vararg</code>|<code>Optional[ast.arg]</code>|<code>*args</code>|
+|<code>kwonlyargs</code>|<code>list[ast.arg]</code>|keyword-only arguments|
+|<code>kw_defaults</code>|<code>list[ast.arg]</code>|default values for keyword-only arguments, where <code>None</code> means the argument is required|
+|<code>kwarg</code>|<code>Optional[ast.arg]</code>|<code>**kwargs</code>|
+|<code>defaults</code>|<code>list[ast.arg]</code>|default values for last <code>n</code> positional arguments|
+
+
+---
+
+The `Greeter.greet()` method has two positional arguments, `self` and `name`, with the latter having a type of `str` and a default value of `'World'`:
+
+```python [highlight-lines="2-6|7-8"][class="hide-line-numbers"]
+arguments(
+  args=[
+    arg(arg='self'),
+    arg(
+      arg='name',
+      annotation=Name(id='str', ctx=Load()))],
+  defaults=[
+    Constant(value='World')])
+```
+---
+
+#### Extracting argument information in a docstring-friendly format
+
+We need argument names, types, and default values for three groups of arguments:
+
+<ul>
+  <li class="fragment">positional</li>
+  <li class="fragment">starred</li>
+  <li class="fragment">keyword-only</li>
+</ul>
+
+---
+
+##### Positional arguments
+
+```python
+from itertools import zip_longest
+
+
+NO_DEFAULT = object()
+
+def _extract_positional_args(
+    arguments: ast.arguments
+) -> list[dict]:
+    return [
+        {
+            'name': arg.arg,
+            'type': getattr(arg.annotation, 'id', '__type__'),
+            'default': (
+                default.value
+                if default is not NO_DEFAULT
+                else default
+            ),
+        }
+        for arg, default in zip_longest(
+            reversed([*arguments.posonlyargs, *arguments.args]),
+            reversed(arguments.defaults),
+            fillvalue=NO_DEFAULT
+        )
+        if arg.arg not in ['self', 'cls']
+    ][::-1]
+```
+
+---
+
+###### Example
+
+Given a function with positional arguments:
+
+```python
+def func(a: str, /, b: int = 3): pass
+```
+
+We get the following result:
+
+```pycon
+>>> _extract_positional_args(
+...     ast.parse(
+...         'def func(a: str, /, b: int = 3): pass'
+...     ).body[0].args
+... )
+[{'name': 'a', 'type': 'str',
+  'default': &lt;object at 0x107c5e620&gt;},
+ {'name': 'b', 'type': 'int', 'default': 3}]
+```
+
+---
+
+##### Starred arguments
+
+```python
+def _extract_star_args(arguments: ast.arguments) -> list[dict]:
+    return [
+        {
+            'name': (
+                f'*{arg.arg}'
+                if arg_type == 'vararg'
+                else f'**{arg.arg}'
+            ),
+            'type': getattr(arg.annotation, 'id', '__type__'),
+            'default': NO_DEFAULT,
+        }
+        if arg
+        else None
+        for arg_type in ['vararg', 'kwarg']
+        for arg in [getattr(arguments, arg_type)]
+    ]
+```
+
+---
+
+###### Example
+
+Given a function with starred arguments:
+
+```python
+def func(*args, **kwargs): pass
+```
+
+We get the following result:
+
+```pycon
+>>> _extract_star_args(
+...     ast.parse(
+...         'def func(*args, **kwargs): pass'
+...     ).body[0].args
+... )
+[{'name': '*args', 'type': '__type__',
+  'default': &lt;object at 0x107c5e630&gt;},
+ {'name': '**kwargs', 'type': '__type__',
+  'default': &lt;object at 0x107c5e630&gt;}]
+```
+
+---
+
+##### Keyword-only arguments
+
+```python
+def _extract_keyword_args(
+    arguments: ast.arguments
+) -> list[dict]:
+    return [
+        {
+            'name': arg.arg,
+            'type': getattr(arg.annotation, 'id', '__type__'),
+            'default': (
+                NO_DEFAULT if default is None
+                else default.value
+            ),
+        }
+        for arg, default in zip(
+            arguments.kwonlyargs, arguments.kw_defaults
+        )
+    ]
+```
+
+---
+
+###### Example
+
+Given a function with keyword-only arguments:
+
+```python
+def func(*, a: str, b: int = 3): pass
+```
+
+We get the following result:
+
+```pycon
+>>> _extract_keyword_args(
+...     ast.parse(
+...         'def func(*, a: str, b: int = 3): pass'
+...     ).body[0].args
+... )
+[{'name': 'a', 'type': 'str',
+  'default': &lt;object at 0x107c5e620&gt;},
+ {'name': 'b', 'type': 'int', 'default': 3}]
+```
+
+---
+
+##### Putting all the arguments together
+
+```python
+def extract_arguments(arguments: ast.arguments) -> tuple[dict]:
+    params = _extract_positional_args(arguments)
+
+    varargs, kwargs = _extract_star_args(arguments)
+    if varargs:
+        params.append(varargs)
+
+    params.extend(_extract_keyword_args(arguments))
+
+    if kwargs:
+        params.append(kwargs)
+
+    return tuple(params)
+```
+
+---
+
+Running this on the `Greeter.greet()` method extracts the `name` argument (ignoring `self`):
+
+```
+[{'name': 'name', 'type': 'str', 'default': 'World'}]
+```
+
+---
+
+### `returns`
+
+The return annotation for `Greeter.greet()` is `str`:
+
+```
+returns=Name(id='str', ctx=Load())
+```
+
+---
+
+#### Extracting returns information in a docstring-friendly format
+
+Here, we simplify by assuming that the return notation is provided and only handling the cases of `Constant` and `Name` nodes:
+
+```python
+def _extract_return_annotation(node: ast.AST) -> str:
+    if isinstance(node, ast.Constant):
+        return str(node.value)
+    if isinstance(node, ast.Name):
+        return str(node.id)
+    return '__return_type__'
+```
+
+---
+
+### Combining arguments and return type into a docstring
+
+We will suggest Numpydoc-style docstrings:
+
+```python
+def suggest_docstring(
+    node: ast.AsyncFunctionDef | ast.FunctionDef
+) -> str:
+    if args := extract_arguments(node.args):
+        args = [
+            f'{arg["name"]} : {arg["type"]}'
+            + f', default {arg["default"].value}'
+            if arg["default"] is not NO_DEFAULT else ''
+            for arg in args
+        ]
+        args = ['', 'Parameters', '----------', *args]
+    else:
+        args = []
+
+    returns = _extract_return_annotation(node.returns)
+
+    return '\\n'.join(
+        [
+            '"""',
+            '___description___',
+            *args,
+            '',
+            'Returns',
+            '-------',
+            returns,
+            '"""',
+        ]
+    )
+```
+
+---
+
+#### Updating the `DocstringVisitor`
+
+```python [highlight-lines="8-26|18-26"][class="hide-line-numbers"]
+class DocstringVisitor(ast.NodeVisitor):
+
+    def __init__(self, module_name: str) -> None:
+        super().__init__()
+        self.stack: list[str] = []
+        self.module_name: str = module_name
+
+    def _detect_missing_docstring(
+        self,
+        node: ast.AsyncFunctionDef
+        | ast.ClassDef
+        | ast.FunctionDef
+        | ast.Module
+    ) -> None:
+        if ast.get_docstring(node) is None:
+            entity = '.'.join(self.stack)
+            print(f'{entity} is missing a docstring')
+        if isinstance(
+            node, ast.AsyncFunctionDef | ast.FunctionDef
+        ):
+            print(
+                'Hint:',
+                suggest_docstring(node),
+                '',
+                sep='\\n',
+            )
+
+    def _visit_helper(
+        self,
+        node: ast.AsyncFunctionDef
+        | ast.ClassDef
+        | ast.FunctionDef
+        | ast.Module
+    ) -> None:
+        self.stack.append(getattr(node, 'name', self.module_name))
+        self._detect_missing_docstring(node)
+        self.generic_visit(node)
+        self.stack.pop()
+
+    def visit_AsyncFunctionDef(
+        self, node: ast.AsyncFunctionDef
+    ) -> None:
+        self._visit_helper(node)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._visit_helper(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self._visit_helper(node)
+
+    def visit_Module(self, node: ast.Module) -> None:
+        self._visit_helper(node)
+```
+
+---
+
+
+```pycon [highlight-lines="1-2|5-17|19-31"][class="hide-line-numbers"]
+>>> visitor = DocstringVisitor('greet')
+>>> visitor.visit(tree)
+greet is missing a docstring
+greet.Greeter is missing a docstring
+greet.Greeter.__init__ is missing a docstring
+Hint:
+"""
+___description___
+
+Parameters
+----------
+enthusiasm : int, default 1
+
+Returns
+-------
+None
+"""
+
+greet.Greeter.greet is missing a docstring
+Hint:
+"""
+___description___
+
+Parameters
+----------
+name : str, default World
+
+Returns
+-------
+str
+"""
+```
