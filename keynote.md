@@ -701,16 +701,38 @@ arguments(
 We need argument names, types, and default values for three groups of arguments:
 
 <ul>
-  <li class="fragment">positional</li>
-  <li class="fragment">starred</li>
-  <li class="fragment">keyword-only</li>
+  <li class="fragment">positional: <code>posonlyargs</code>, <code>args</code>, and <code>defaults</code></li>
+  <li class="fragment">starred: <code>vararg</code> and <code>kwarg</code></li>
+  <li class="fragment">keyword-only: <code>kwonlyargs</code> and <code>kw_defaults</code></li>
 </ul>
 
 ---
 
 ##### Positional arguments
 
-```python
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    We will process <code>posonlyargs</code> and <code>args</code> together since both of their defaults (if they have them) are stored in <code>defaults</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    <code>None</code> can be a default value, so we create a sentinel value to indicate when something has no default:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We use <code>zip_longest</code> loop over the values because <code>defaults</code> is at most the combined length of <code>posonlyargs</code> and <code>args</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    For now, we can exclude any <code>self</code> and <code>cls</code> arguments like this, but it would be more accurate to revisit our stack to check if the function is actually a method:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    For each argument, we create a dictionary to store the name, type, and default value for later use:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="4">
+    Due to the structure of <code>details</code>, we created the list in reverse, so we flip it before returning it:
+  </p>
+</div>
+
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-25|4|19-23|24|10-18|25" data-fragment-index="0">
 from itertools import zip_longest
 
 
@@ -736,21 +758,13 @@ def _extract_positional_args(
         )
         if arg.arg not in ['self', 'cls']
     ][::-1]
-```
+</code></pre>
 
 ---
 
 ###### Example
 
-Given a function with positional arguments:
-
-```python
-def func(a: str, /, b: int = 3): pass
-```
-
-We get the following result:
-
-```pycon
+```pycon [highlight-lines="3|1-5|6-8"][class="hide-line-numbers"]
 >>> _extract_positional_args(
 ...     ast.parse(
 ...         'def func(a: str, /, b: int = 3): pass'
@@ -765,7 +779,23 @@ We get the following result:
 
 ##### Starred arguments
 
-```python
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    We will process <code>vararg</code> and <code>kwarg</code> together, prefixing their names with the appropriate number of <code>*</code> characters:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    Unlike the other arguments, these are either <code>None</code> or a single <code>ast.arg</code> node, so we don't need to loop over the values:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    If that argument is present in the function signature, we will capture the details we need for the docstring:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    Otherwise, we will record it as <code>None</code>, so that we can filter this out when we make the docstring:
+  </p>
+</div>
+
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-16|14-15|3-12|13" data-fragment-index="0">
 def _extract_star_args(arguments: ast.arguments) -> list[dict]:
     return [
         {
@@ -782,21 +812,13 @@ def _extract_star_args(arguments: ast.arguments) -> list[dict]:
         for arg_type in ['vararg', 'kwarg']
         for arg in [getattr(arguments, arg_type)]
     ]
-```
+</code></pre>
 
 ---
 
 ###### Example
 
-Given a function with starred arguments:
-
-```python
-def func(*args, **kwargs): pass
-```
-
-We get the following result:
-
-```pycon
+```pycon [highlight-lines="3|1-5|6-9"][class="hide-line-numbers"]
 >>> _extract_star_args(
 ...     ast.parse(
 ...         'def func(*args, **kwargs): pass'
@@ -812,7 +834,23 @@ We get the following result:
 
 ##### Keyword-only arguments
 
-```python
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    Finally, we process <code>kwonlyargs</code> and <code>kw_defaults</code> together:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    Both lists are of the same size this time, so we can use <code>zip()</code>:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    We gather the same information on the arguments:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    However, a default value of <code>None</code> here means that there is no default:
+  </p>
+</div>
+
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-16|13-15|5-12|9" data-fragment-index="0">
 def _extract_keyword_args(
     arguments: ast.arguments
 ) -> list[dict]:
@@ -829,21 +867,13 @@ def _extract_keyword_args(
             arguments.kwonlyargs, arguments.kw_defaults
         )
     ]
-```
+</code></pre>
 
 ---
 
 ###### Example
 
-Given a function with keyword-only arguments:
-
-```python
-def func(*, a: str, b: int = 3): pass
-```
-
-We get the following result:
-
-```pycon
+```pycon  [highlight-lines="3|1-5|6-8"][class="hide-line-numbers"]
 >>> _extract_keyword_args(
 ...     ast.parse(
 ...         'def func(*, a: str, b: int = 3): pass'
@@ -858,20 +888,23 @@ We get the following result:
 
 ##### Putting all the arguments together
 
+We ensure that the order of the arguments in the docstring matches their order in the function signature:
+
 ```python
 def extract_arguments(arguments: ast.arguments) -> tuple[dict]:
-    params = _extract_positional_args(arguments)
+    args = _extract_positional_args(arguments)
 
     varargs, kwargs = _extract_star_args(arguments)
-    if varargs:
-        params.append(varargs)
 
-    params.extend(_extract_keyword_args(arguments))
+    if varargs:
+        args.append(varargs)
+
+    args.extend(_extract_keyword_args(arguments))
 
     if kwargs:
-        params.append(kwargs)
+        args.append(kwargs)
 
-    return tuple(params)
+    return tuple(args)
 ```
 
 ---
@@ -881,6 +914,8 @@ Running this on the `Greeter.greet()` method extracts the `name` argument (ignor
 ```
 [{'name': 'name', 'type': 'str', 'default': 'World'}]
 ```
+
+<p class="fragment">Now, we need the return type.</p>
 
 ---
 
@@ -900,10 +935,13 @@ Here, we simplify by assuming that the return notation is provided and only hand
 
 ```python
 def _extract_return_annotation(node: ast.AST) -> str:
+
     if isinstance(node, ast.Constant):
         return str(node.value)
+
     if isinstance(node, ast.Name):
         return str(node.id)
+
     return '__return_type__'
 ```
 
