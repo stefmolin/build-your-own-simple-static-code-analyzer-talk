@@ -428,3 +428,92 @@ module is missing a docstring
 ```
 
 <p class="fragment">What about the missing docstrings for the <code>Greeter</code> class and its methods?</p>
+
+---
+
+### Complete traversal means visiting all fields
+
+We aren't visiting the list of AST nodes in the `ast.Module` node's `body` field, so traversal starts and stops there:
+
+<div class="center">
+  <img width="275" src="media/docstring-nodes-with-attributes.svg" alt="The AST the nodes in greet.py that can have docstrings with attributes and types visualized with Graphviz">
+</div>
+
+---
+
+### The `general_visit()` method
+
+<ul>
+  <li class="fragment">Defined on base class <code>ast.NodeVisitor</code></li>
+  <li class="fragment">Visits child nodes by calling <code>visit()</code> on any nodes returned from <code>ast.iter_fields()</code></li>
+  <li class="fragment">Called automatically for node types we didn't create methods for</li>
+</ul>
+
+
+---
+
+### Modifying the `DocstringVisitor`
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    Add the <code>_visit_helper()</code> method, which checks the docstring and then continues the traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    Calling <code>generic_visit()</code> on each node we check docstrings for ensures we continue the traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    Now, we switch to calling <code>_visit_helper()</code> whenever we visit module, class, or function nodes:
+  </p>
+</div>
+
+<div class="fragment" data-fragment-index="0">
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="3-11|11|13-25" data-fragment-index="1">
+class DocstringVisitor(ast.NodeVisitor):
+
+    def _visit_helper(
+        self,
+        node: ast.AsyncFunctionDef
+        | ast.ClassDef
+        | ast.FunctionDef
+        | ast.Module
+    ) -> None:
+        detect_missing_docstring(node)
+        self.generic_visit(node)
+
+    def visit_AsyncFunctionDef(
+        self, node: ast.AsyncFunctionDef
+    ) -> None:
+        self._visit_helper(node)
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        self._visit_helper(node)
+
+    def visit_ClassDef(self, node: ast.ClassDef) -> None:
+        self._visit_helper(node)
+
+    def visit_Module(self, node: ast.Module) -> None:
+        self._visit_helper(node)
+</code>
+</pre>
+</div>
+
+
+---
+
+### Complete traversal achieved 🎉
+
+```pycon
+>>> visitor = DocstringVisitor()
+>>> visitor.visit(tree)
+module is missing a docstring
+Greeter is missing a docstring
+__init__ is missing a docstring
+greet is missing a docstring
+```
+
+---
+
+<div class="center">
+  <img width="85%" src="./media/traversal-animation.gif" alt="Complete traversal of the AST for greet.py visualized with Graphviz"/>
+</div>
