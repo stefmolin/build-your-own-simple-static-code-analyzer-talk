@@ -1253,3 +1253,16 @@ class Greeter:
         """
         return f"Hello, {name}{'!' * self.enthusiasm}"
 ```
+
+---
+
+## Potential next steps
+
+<ul>
+  <li class="fragment">Have <code>DocstringVisitor</code> and <code>DocstringTransformer</code> handle reading in the file and generating the AST</li>
+  <li class="fragment">Infer whether a function has a return statement in the absence of a return type annotation</li>
+  <li class="fragment">Have <code>DocstringTransformer</code> convert the modified AST back to source code and save it to a file</li>
+  <li class="fragment">Support configuration via <code>pyproject.toml</code> and inline comments</li>
+  <li class="fragment">Create a CLI and a way to run on multiple files</li>
+  <li class="fragment">Turn this into a pre-commit hook and/or CI tool</li>
+</ul>
