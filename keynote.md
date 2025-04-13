@@ -873,7 +873,7 @@ def _extract_keyword_args(
 
 ###### Example
 
-```pycon  [highlight-lines="3|1-5|6-8"][class="hide-line-numbers"]
+```pycon [highlight-lines="3|1-5|6-8"][class="hide-line-numbers"]
 >>> _extract_keyword_args(
 ...     ast.parse(
 ...         'def func(*, a: str, b: int = 3): pass'
@@ -949,26 +949,66 @@ def _extract_return_annotation(node: ast.AST) -> str:
 
 ### Combining arguments and return type into a docstring
 
-We will suggest Numpydoc-style docstrings:
+We will suggest Numpydoc-style docstrings for functions and methods that don't have docstrings:
 
 ```python
+"""
+__description__
+
+Parameters
+----------
+name : type
+    __description__
+
+Returns
+-------
+__return_type__
+    __description__
+"""
+```
+
+---
+
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    The <code>suggest_docstring()</code> function will construct docstrings based function nodes in the AST:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    It formats the output from the <code>_extract_arguments()</code> function into a parameters section:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    Next, it uses the output from the <code>_extract_returns()</code> function to make a returns section:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    Everything is then combined with some placeholders and triple quotes to become a docstring template:
+  </p>
+</div>
+
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-34|4-16|18-21|23-34" data-fragment-index="0">
 def suggest_docstring(
     node: ast.AsyncFunctionDef | ast.FunctionDef
 ) -> str:
     if args := extract_arguments(node.args):
         args = [
             f'{arg["name"]} : {arg["type"]}'
-            + f', default {arg["default"].value}'
-            if arg["default"] is not NO_DEFAULT else ''
+            + (
+                f', default {arg["default"]}'
+                if arg["default"] is not NO_DEFAULT else ''
+            )
+            + '\n    __description__'
             for arg in args
         ]
         args = ['', 'Parameters', '----------', *args]
     else:
         args = []
 
-    returns = _extract_return_annotation(node.returns)
+    returns = (
+        _extract_return_annotation(node.returns)
+        + '\n    __description__'
+    )
 
-    return '\\n'.join(
+    return '\n'.join(
         [
             '"""',
             '___description___',
@@ -980,13 +1020,15 @@ def suggest_docstring(
             '"""',
         ]
     )
-```
+</code></pre>
 
 ---
 
 #### Updating the `DocstringVisitor`
 
-```python [highlight-lines="8-26|18-26"][class="hide-line-numbers"]
+In `_detect_missing_docstring()`, we now suggest a docstring for functions that are missing one:
+
+```python [highlight-lines="8-27|19-27"][class="hide-line-numbers"]
 class DocstringVisitor(ast.NodeVisitor):
 
     def __init__(self, module_name: str) -> None:
@@ -1004,15 +1046,16 @@ class DocstringVisitor(ast.NodeVisitor):
         if ast.get_docstring(node) is None:
             entity = '.'.join(self.stack)
             print(f'{entity} is missing a docstring')
-        if isinstance(
-            node, ast.AsyncFunctionDef | ast.FunctionDef
-        ):
-            print(
-                'Hint:',
-                suggest_docstring(node),
-                '',
-                sep='\\n',
-            )
+
+            if isinstance(
+                node, ast.AsyncFunctionDef | ast.FunctionDef
+            ):
+                print(
+                    'Hint:',
+                    suggest_docstring(node),
+                    '',
+                    sep='\n',
+                )
 
     def _visit_helper(
         self,
@@ -1043,8 +1086,9 @@ class DocstringVisitor(ast.NodeVisitor):
 
 ---
 
+#### Docstrings are now suggested based on the AST
 
-```pycon [highlight-lines="1-2|5-17|19-31"][class="hide-line-numbers"]
+```pycon [highlight-lines="1-2|5-19|21-35"][class="hide-line-numbers"]
 >>> visitor = DocstringVisitor('greet')
 >>> visitor.visit(tree)
 greet is missing a docstring
@@ -1057,10 +1101,12 @@ ___description___
 Parameters
 ----------
 enthusiasm : int, default 1
+    __description__
 
 Returns
 -------
 None
+    __description__
 """
 
 greet.Greeter.greet is missing a docstring
@@ -1071,9 +1117,11 @@ ___description___
 Parameters
 ----------
 name : str, default World
+    __description__
 
 Returns
 -------
 str
+    __description__
 """
 ```
