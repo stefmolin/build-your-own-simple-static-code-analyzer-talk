@@ -1266,3 +1266,18 @@ class Greeter:
   <li class="fragment">Create a CLI and a way to run on multiple files</li>
   <li class="fragment">Turn this into a pre-commit hook and/or CI tool</li>
 </ul>
+
+---
+
+## Reference implementation
+
+All examples herein were based on my project, **Docstringify**:
+
+- Repository: <https://github.com/stefmolin/docstringify>
+- PyPI: `python -m pip install docstringify`
+
+[notes]
+- I started Docstringify for this keynote, but it quickly grew too big for the allotted time.
+- Docstringify is a more full-featured example than what I was able to show in this presentation.
+- It currently supports Numpydoc-style and Google-style docstrings, and provides a CLI and pre-commit hook.
+- Docstringify is a work in progress, but people are welcome to contribute.
