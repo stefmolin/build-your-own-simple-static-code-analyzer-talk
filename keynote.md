@@ -60,58 +60,13 @@ fontawesome:
 
 ---
 
-## (1) Section 1
+## What makes a tool a static code analyzer?
 
-TODO: intro to the keynote and topic
-
-Mention that the goal is to find missing docstrings and suggest templates for them based on the code
+<p class="fragment">It analyzes source code <b>without</b> running it.</p>
 
 ---
 
-### (2) Example input file
-
-`greet.py`
-
-```python
-class Greeter:
-    def __init__(self, enthusiasm: int = 1) -> None:
-        self.enthusiasm = enthusiasm
-
-    def greet(self, name: str = 'World') -> str:
-        return f'Hello, {name}{"!" * self.enthusiasm}'
-```
-
----
-
-### (3) Possible ways to do this
-
-<ol>
-  <li class="fragment fade-in" data-fragment-index="1">
-    <span class="fragment strike" data-fragment-index="2">Manually (open each file and edit)</span>
-    <span class="fragment fade-in" data-fragment-index="2">&ndash; tedious and error prone</span>
-  </li>
-  <li class="fragment fade-in" data-fragment-index="3">
-    <span class="fragment strike" data-fragment-index="4">Regular expressions</span>
-    <span class="fragment fade-in" data-fragment-index="4">&ndash; messy and hard to get right (edge cases, context, <i>etc.</i>)</span>
-  </li>
-  <li class="fragment fade-in" data-fragment-index="5">
-    <span class="fragment strike" data-fragment-index="6">Script to import everything and check docstrings</span>
-    <span class="fragment fade-in" data-fragment-index="6">&ndash; must be able to install codebase and its dependencies; slow</span>
-  </li>
-  <li class="fragment fade-in" data-fragment-index="7">
-    <span>Static code analysis</span>
-  </li>
-</ol>
-
----
-
-## Static code analysis
-
-Analyze code **without** executing it
-
----
-
-### Main benefits of static code analysis
+### What are the main benefits of static code analysis?
 
 <ul>
   <li class="fragment fade-in">
@@ -119,34 +74,6 @@ Analyze code **without** executing it
   </li>
   <li class="fragment fade-in">
     Portable &ndash; no need to install the codebase being analyzed or its dependencies
-  </li>
-</ul>
-
----
-
-### Some open source examples may be familiar with
-
-<ul>
-  <li class="fragment fade-in">
-    Linters and formatters like <code>ruff</code> (Rust) and <code>black</code> (Python)
-  </li>
-  <li class="fragment fade-in">
-    Documentation tools like <code>sphinx</code> and the <code>numpydoc-validation</code> pre-commit hook
-  </li>
-  <li class="fragment fade-in">
-    Automatic Python syntax upgrade tools like <code>pyupgrade</code>
-  </li>
-  <li class="fragment fade-in">
-    Type checkers like <code>mypy</code>
-  </li>
-  <li class="fragment fade-in">
-    Code security tools like <code>bandit</code>
-  </li>
-  <li class="fragment fade-in">
-    Code and testing coverage tools like <code>vulture</code> and <code>coverage.py</code>
-  </li>
-  <li class="fragment fade-in">
-    Testing frameworks that instrument your code or generate tests based on it like <code>hypothesis</code> and <code>pytest</code>
   </li>
 </ul>
 
@@ -164,7 +91,7 @@ Analyze code **without** executing it
 
 <ul>
   <li class="fragment fade-in">
-    Represents of the structure of source code as a tree
+    Represents the structure of the source code as a tree
   </li>
   <li class="fragment fade-in">
     Nodes in the tree are language constructs (<em>e.g.</em>, module, class, function)
@@ -181,7 +108,7 @@ Analyze code **without** executing it
 
 [data-transition=slide-in fade-out]
 
-Remember `greet.py`?
+Let's see what this code snippet (`greet.py`) looks like represented as an AST:
 
 ```python
 class Greeter:
@@ -337,6 +264,102 @@ Module(
           returns=Name(id='str', ctx=Load()))])])
 </code>
 </pre>
+
+---
+
+### Popular open source tools that use ASTs
+
+<ul>
+  <li class="fragment fade-in">
+    Linters and formatters like <code>ruff</code> (Rust) and <code>black</code> (Python)
+  </li>
+  <li class="fragment fade-in">
+    Documentation tools like <code>sphinx</code> and the <code>numpydoc-validation</code> pre-commit hook
+  </li>
+  <li class="fragment fade-in">
+    Automatic Python syntax upgrade tools like <code>pyupgrade</code>
+  </li>
+  <li class="fragment fade-in">
+    Type checkers like <code>mypy</code>
+  </li>
+  <li class="fragment fade-in">
+    Code security tools like <code>bandit</code>
+  </li>
+  <li class="fragment fade-in">
+    Code and testing coverage tools like <code>vulture</code> and <code>coverage.py</code>
+  </li>
+  <li class="fragment fade-in">
+    Testing frameworks that instrument your code or generate tests based on it like <code>hypothesis</code> and <code>pytest</code>
+  </li>
+</ul>
+
+---
+
+## Let's build a simple static code analyzer
+
+<ul>
+  <li class="fragment fade-in">
+    Find missing docstrings and suggest templates based on the code itself
+  </li>
+  <li class="fragment fade-in">
+    Use only the Python standard library
+  </li>
+</ul>
+
+---
+
+### The input
+
+We will analyze a single file, `greet.py`, for time and space considerations:
+
+```python
+class Greeter:
+    def __init__(self, enthusiasm: int = 1) -> None:
+        self.enthusiasm = enthusiasm
+
+    def greet(self, name: str = 'World') -> str:
+        return f'Hello, {name}{"!" * self.enthusiasm}'
+```
+
+---
+
+### Is static code analysis really necessary here?
+
+<p class="fragment" data-fragment-index="0">
+  While we are working with one file here, most codebases will be much larger. How could we approach this scalably?
+</p>
+
+<ol>
+  <li class="fragment fade-in" data-fragment-index="1">
+    <span class="fragment strike" data-fragment-index="2">Manually (open each file and edit)</span>
+    <span class="fragment fade-in" data-fragment-index="2">&ndash; tedious and error prone</span>
+  </li>
+  <li class="fragment fade-in" data-fragment-index="3">
+    <span class="fragment strike" data-fragment-index="4">Regular expressions</span>
+    <span class="fragment fade-in" data-fragment-index="4">&ndash; messy and hard to get right (edge cases, context, <i>etc.</i>)</span>
+  </li>
+  <li class="fragment fade-in" data-fragment-index="5">
+    <span class="fragment strike" data-fragment-index="6">Script to import everything and check docstrings</span>
+    <span class="fragment fade-in" data-fragment-index="6">&ndash; must be able to install codebase and its dependencies; slow</span>
+  </li>
+  <li class="fragment fade-in" data-fragment-index="7">
+    <span>Static code analysis</span>
+    <span class="fragment fade-in" data-fragment-index="8">&ndash; analyzing code without executing it means we can use this on any of our codebases</span>
+    <span class="fragment fade-in" data-fragment-index="9">✅</span>
+  </li>
+</ol>
+
+---
+
+## Important disclaimer before we dive in
+
+<p class="fragment">
+  Docstrings have been omitted from all code snippets for space 😂
+</p>
+
+<p class="fragment">
+  <b>Fear not</b> &ndash; we are building a tool to fix that!
+</p>
 
 ---
 
