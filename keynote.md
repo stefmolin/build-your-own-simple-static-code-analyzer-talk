@@ -53,7 +53,7 @@ fontawesome:
 ## Bio
 
 - 👩🏻‍💻 Software engineer at Bloomberg in NYC
-- ✨ Core developer of [numpydoc](https://github.com/numpy/numpydoc) and creator of [numpydoc's pre-commit hook](https://numpydoc.readthedocs.io/en/latest/validation.html)
+- ✨ Core developer of [numpydoc](https://github.com/numpy/numpydoc) and creator of [numpydoc's pre-commit hook](https://numpydoc.readthedocs.io/en/latest/validation.html#docstring-validation-using-pre-commit-hook), which uses static code analysis
 - ✍ Author of "[Hands-On Data Analysis with Pandas](https://stefaniemolin.com/books/Hands-On-Data-Analysis-with-Pandas-2nd-edition/)"
 - 🎓 Bachelor's in operations research from Columbia University
 - 🎓 Master's in computer science (ML specialization) from Georgia Tech
