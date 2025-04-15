@@ -2,21 +2,21 @@
 title: Build Your Own (Simple) Static Code Analyzer
 author: Stefanie Molin
 description: In this keynote, Stefanie Molin walks you through the process of creating a simple static code analyzer in Python using a data structure called an abstract syntax tree, which represents your code's structure and allows you to access its components in order to perform checks.
-published: TODO
-last_modified: TODO
+published: 2025-04-15T00:00:00.000Z
+last_modified: 2025-04-15T00:00:00.000Z
 g_tag: G-25389D1SR4
 keywords: [ast docstring abstract-syntax-tree docstring-generator numpydoc]
 og:
   image:
-    url: TODO
-    width: 1200
-    height: 800
-    alt:
+    url: https://stefaniemolin.com/build-your-own-simple-static-code-analyzer-talk/media/traversal-animation.gif
+    width: 1368
+    height: 1079
+    alt: Animation of AST traversal in Python on a simple module with a class and two methods.
   locale: en_US
   site_name: Stefanie Molin
   title: "{title} | {author}"
   type: website
-  url: https://stefaniemolin.com/TODO/
+  url: https://stefaniemolin.com/build-your-own-simple-static-code-analyzer-talk
 twitter:
   card: summary
   site: "@StefanieMolin"
