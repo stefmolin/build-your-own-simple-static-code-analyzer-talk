@@ -439,7 +439,7 @@ module is missing a docstring
 We aren't visiting the list of AST nodes in the `ast.Module` node's `body` field, so traversal starts and stops there:
 
 <div class="center">
-  <img width="275" src="media/docstring-nodes-with-attributes.svg" alt="The AST the nodes in greet.py that can have docstrings with attributes and types visualized with Graphviz">
+  <img width="350" src="media/docstring-nodes-with-attributes.svg" alt="The AST the nodes in greet.py that can have docstrings with attributes and types visualized with Graphviz">
 </div>
 
 ---
