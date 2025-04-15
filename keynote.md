@@ -5,7 +5,7 @@ description: In this keynote, Stefanie Molin walks you through the process of cr
 published: 2025-04-15T00:00:00.000Z
 last_modified: 2025-04-15T00:00:00.000Z
 g_tag: G-25389D1SR4
-keywords: [ast docstring abstract-syntax-tree docstring-generator numpydoc]
+keywords: [ast docstring abstract-syntax-tree docstring-generator numpydoc python]
 og:
   image:
     url: https://stefaniemolin.com/build-your-own-simple-static-code-analyzer-talk/media/traversal-animation.gif
