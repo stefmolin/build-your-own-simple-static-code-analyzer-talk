@@ -561,7 +561,7 @@ greet is missing a docstring
 
 <div class="fragment" data-fragment-index="0">
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="3-6|8-17|16|19-31|26-28|31" data-fragment-index="1">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="3-6|8-17|16-17|19-31|26-28|31" data-fragment-index="1">
 class DocstringVisitor(ast.NodeVisitor):
 
     def __init__(self, module_name: str) -> None:
@@ -639,7 +639,7 @@ greet.Greeter.greet is missing a docstring
 <ul>
   <li class="fragment"><code>args</code>: Argument names, types, and defaults</li>
   <li class="fragment"><code>returns</code>: Return type annotation (if present)</li>
-  <li class="fragment"><code>body</code>: AST of function body to infer return types/yields/raises (out of scope)</li>
+  <li class="fragment"><code>body</code>: AST of the function body can be used to infer return types/yields/raises (out of scope)</li>
 </ul>
 
 <p class="fragment">We will focus on fully-typed code for this keynote.</p>
