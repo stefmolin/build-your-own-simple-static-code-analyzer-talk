@@ -738,7 +738,7 @@ We need argument names, types, and default values for three groups of arguments:
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    We will process <code>posonlyargs</code> and <code>args</code> together since both of their defaults (if they have them) are stored in <code>defaults</code>:
+    Using a list comprehension, we will process <code>posonlyargs</code> and <code>args</code> together since both of their defaults (if they have them) are stored in <code>defaults</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     <code>None</code> can be a default value, so we create a sentinel value to indicate when something has no default:
