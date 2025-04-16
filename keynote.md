@@ -413,7 +413,7 @@ File structures vary, so we will create a `NodeVisitor` to ensure we find all mi
 <ol>
   <li class="fragment">Subclass <code>ast.NodeVisitor</code></li>
   <li class="fragment">Create <code>visit_&lt;NodeType&gt;()</code> methods for nodes we are interested in</li>
-  <li class="fragment">Instantiate the visitor and call <code>visit(tree)</code></li>
+  <li class="fragment">Instantiate the visitor and call its <code>visit()</code> method</li>
 </ol>
 
 ---
@@ -448,9 +448,9 @@ class DocstringVisitor(ast.NodeVisitor):
 
 ---
 
-### 3. Instantiate the visitor and call `visit(tree)`
+### 3. Instantiate the visitor and call its `visit()` method
 
-```pycon
+```pycon [highlight-lines="1-2|3"][class="hide-line-numbers"]
 >>> visitor = DocstringVisitor()
 >>> visitor.visit(tree)
 module is missing a docstring
