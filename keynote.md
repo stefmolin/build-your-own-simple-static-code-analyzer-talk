@@ -58,6 +58,9 @@ fontawesome:
 - 🎓 Bachelor's in operations research from Columbia University
 - 🎓 Master's in computer science (ML specialization) from Georgia Tech
 
+[notes]
+This is a highly-technical keynote, but don't worry about getting lost or trying to take pictures of the code as its up on the screen because the slides are self-contained, and I have made them publicly-available on my website.
+
 ---
 
 ## What makes a tool a static code analyzer?
@@ -134,13 +137,13 @@ class Greeter:
 
 <ul>
   <li class="fragment fade-in">
+    Represents syntactically-correct Python code (cannot be generated in the presence of syntax errors)
+  </li>
+  <li class="fragment fade-in">
     Created by the parser as an intermediary step when
     <a href="https://github.com/python/cpython/blob/main/InternalDocs/compiler.md">
       compiling source code into byte code
     </a> (necessary to run it)
-  </li>
-  <li class="fragment fade-in">
-    Only syntactically-correct Python code can be parsed into an AST
   </li>
   <li class="fragment fade-in">
     Available in the standard library via the <code>ast</code> module
