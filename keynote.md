@@ -350,7 +350,7 @@ class Greeter:
   </li>
   <li class="fragment fade-in" data-fragment-index="3">
     <span class="fragment strike" data-fragment-index="4">Regular expressions</span>
-    <span class="fragment fade-in" data-fragment-index="4">&ndash; messy and hard to get right (edge cases, context, <i>etc.</i>)</span>
+    <span class="fragment fade-in" data-fragment-index="4">&ndash; messy and hard to get right (edge cases, context, <em>etc.</em>)</span>
   </li>
   <li class="fragment fade-in" data-fragment-index="5">
     <span class="fragment strike" data-fragment-index="6">Script to import everything and check docstrings</span>
@@ -381,7 +381,7 @@ class Greeter:
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-in-then-out" data-fragment-index="0">
-    We need to traverse the full AST (to account for nested functions and classes) and inspect each node's docstring with something like this:
+    We need to traverse the full AST (to account for nested functions and classes) and inspect each node's docstring:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
     Only <code>ast.Module</code>, <code>ast.ClassDef</code>, <code>ast.FunctionDef</code>, and <code>ast.AsyncFunctionDef</code> nodes can have docstrings:
@@ -419,7 +419,9 @@ In `greet.py`, we want to call this function on these nodes only:
 
 ## Traversing the AST
 
-File structures vary, so we will create a `NodeVisitor` to ensure we find all missing docstrings:
+<p class="fragment">
+  File structures vary, so we will create a <code>NodeVisitor</code> to ensure we find all missing docstrings:
+</p>
 
 <ol>
   <li class="fragment">Subclass <code>ast.NodeVisitor</code></li>
@@ -432,14 +434,15 @@ File structures vary, so we will create a `NodeVisitor` to ensure we find all mi
 ### 1. Subclass `ast.NodeVisitor`
 
 ```python
-class DocstringVisitor(ast.NodeVisitor): ...
+class DocstringVisitor(ast.NodeVisitor):
+    pass
 ```
 
 ---
 
 ### 2. Create `visit_<NodeType>()` methods for nodes we are interested in
 
-```python
+```python [highlight-lines="3-15"][class="hide-line-numbers"]
 class DocstringVisitor(ast.NodeVisitor):
 
     def visit_AsyncFunctionDef(
@@ -543,7 +546,7 @@ class DocstringVisitor(ast.NodeVisitor):
 
 ### Complete traversal achieved 🎉
 
-```pycon
+```pycon [highlight-lines="3-6"][class="hide-line-numbers"]
 >>> visitor = DocstringVisitor()
 >>> visitor.visit(tree)
 module is missing a docstring
@@ -676,7 +679,7 @@ greet.Greeter.greet is missing a docstring
 <ul>
   <li class="fragment"><code>args</code>: Argument names, types, and defaults</li>
   <li class="fragment"><code>returns</code>: Return type annotation (if present)</li>
-  <li class="fragment"><code>body</code>: AST of the function body can be used to infer return types/yields/raises (out of scope)</li>
+  <li class="fragment"><code>body</code>: AST of the function body which can be used to infer return types, as well as whether the function raises any exceptions (out of scope)</li>
 </ul>
 
 <p class="fragment">We will focus on fully-typed code for this keynote.</p>
@@ -735,7 +738,9 @@ arguments(
 
 #### Extracting argument information in a docstring-friendly format
 
-We need argument names, types, and default values for three groups of arguments:
+<p class="fragment">
+  We need argument names, types, and default values for three groups of arguments:
+</p>
 
 <ul>
   <li class="fragment">positional: <code>posonlyargs</code>, <code>args</code>, and <code>defaults</code></li>
@@ -749,13 +754,13 @@ We need argument names, types, and default values for three groups of arguments:
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    Using a list comprehension, we will process <code>posonlyargs</code> and <code>args</code> together since both of their defaults (if they have them) are stored in <code>defaults</code>:
+    Using a <b>list comprehension</b>, we will process <code>posonlyargs</code> and <code>args</code> together since both of their defaults (if they have them) are stored in <code>defaults</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     <code>None</code> can be a default value, so we create a sentinel value to indicate when something has no default:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
-    We use <code>zip_longest</code> loop over the values because <code>defaults</code> is at most the combined length of <code>posonlyargs</code> and <code>args</code>:
+    We use <code>zip_longest</code> loop over the values because <code>defaults</code> is <em>at most</em> the combined length of <code>posonlyargs</code> and <code>args</code>:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
     For now, we can exclude any <code>self</code> and <code>cls</code> arguments like this, but it would be more accurate to revisit our stack to check if the function is actually a method:
@@ -764,7 +769,7 @@ We need argument names, types, and default values for three groups of arguments:
     For each argument, we create a dictionary to store the name, type, and default value for later use:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="4">
-    Due to the structure of <code>details</code>, we created the list in reverse, so we flip it before returning it:
+    Due to the structure of <code>defaults</code>, we created the list in reverse, so we flip it before returning it:
   </p>
 </div>
 
@@ -931,9 +936,26 @@ Including a `*` in the function definition requires that the arguments following
 
 ##### Putting all the arguments together
 
-We ensure that the order of the arguments in the docstring matches their order in the function signature:
+<div class="r-stack r-stack-left">
+  <p class="fragment fade-out" data-fragment-index="0">
+    We ensure that the order of the arguments in the docstring matches their order in the function signature:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="0">
+    First, we include the positional arguments with the positional-only ones preceding the ones that can be passed by position or name:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="1">
+    Next, we process the starred arguments. However, we only check whether <code>varargs</code> is present at this time, because it belongs in the positional arguments group:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="2">
+    Finally, we include the keyword-only arguments, with <code>kwargs</code> coming last (if present):
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="3">
+    With all of the arguments extracted and ordered properly, we convert to a tuple to make it immutable and return:
+  </p>
+</div>
 
-```python
+<pre>
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-14|2|4-7|9-12|14" data-fragment-index="0">
 def extract_arguments(arguments: ast.arguments) -> tuple[dict]:
     args = _extract_positional_args(arguments)
 
@@ -948,7 +970,7 @@ def extract_arguments(arguments: ast.arguments) -> tuple[dict]:
         args.append(kwargs)
 
     return tuple(args)
-```
+</code></pre>
 
 ---
 
@@ -976,7 +998,7 @@ returns=Name(id='str', ctx=Load())
 
 Here, we simplify by assuming that the return notation is provided and only handling the cases of `Constant` and `Name` nodes:
 
-```python
+```python [highlight-lines="1-9|3-4|6-7"][class="hide-line-numbers"]
 def _extract_return_annotation(node: ast.AST) -> str:
 
     if isinstance(node, ast.Constant):
@@ -1193,7 +1215,7 @@ Suggestions are great, but we can do better.
     In order to properly indent the docstring, we need to add one additional level of indentation beyond what the function definition has (<code>col_offset</code>):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
-    The AST node we inject will be an <code>ast.Expr</code> node with an <code>ast.Constant</code> node containing the docstring itself:
+    The AST node we inject will be an <code>ast.Expr</code> node with an <code>ast.Constant</code> node inside containing the docstring itself:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="4">
     The <code>suggest_docstring()</code> function includes the surrounding <code>"""</code>, so we need to remove them (<code>suggestion[3:-3]</code>):
@@ -1202,10 +1224,10 @@ Suggestions are great, but we can do better.
     We also need to add the indent on the final line (<code>+ prefix</code>) since <code>textwrap.indent()</code> won't indent a blank line with nothing after it:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="6">
-    The docstring AST node will be first entry in the <code>ast.FunctionDef</code> node's <code>body</code> field:
+    The docstring AST node will be the first entry in the <code>ast.FunctionDef</code> node's <code>body</code> field:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="7">
-    Since AST nodes all store references to their line numbers in the source code, which we didn't specify, we fix them for all nodes in this subtree after making the insertion:
+    Since AST nodes store references to their line numbers in the source code, we fix them for all nodes in this subtree after making the insertion:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="8">
     The <code>_visit_helper()</code> method will call <code>_handle_missing_docstring()</code> and make sure we perform a complete traversal:
