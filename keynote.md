@@ -1290,7 +1290,7 @@ class Greeter:
   </li>
   <li class="fragment">Create a CLI and a way to run on multiple files</li>
   <li class="fragment">
-    Turn this into a <a href="https://stefaniemolin.com/articles/devx/pre-commit/hook-creation-guide/" target="_blank">pre-commit hook</a> and/or CI tool
+    Turn this into a <a href="https://stefaniemolin.com/articles/devx/pre-commit/hook-creation-guide/">pre-commit hook</a> and/or CI tool
   </li>
 </ul>
 
