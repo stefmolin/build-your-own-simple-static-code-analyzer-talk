@@ -981,7 +981,7 @@ def _extract_return_annotation(node: ast.AST) -> str:
 
 ### Combining arguments and return type into a docstring
 
-We will suggest Numpydoc-style docstrings for functions and methods that don't have docstrings:
+We will suggest [Numpydoc-style docstrings](https://numpydoc.readthedocs.io/en/latest/format.html) for functions and methods that don't have docstrings, and the user will be required to fill in any placeholder values (`__description__`, `__type__`, and `__return_type__`) that our tool can't infer from the type annotations:
 
 ```python
 """
@@ -989,7 +989,7 @@ __description__
 
 Parameters
 ----------
-name : type
+name : __type__
     __description__
 
 Returns
