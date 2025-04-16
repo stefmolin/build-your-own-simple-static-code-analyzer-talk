@@ -303,14 +303,22 @@ Module(
 
 ## Let's build a simple static code analyzer
 
+<p class="fragment">
+  To learn how to use the AST, we will build a simple static code analyzer that
+</p>
+
 <ul>
   <li class="fragment fade-in">
-    Find missing docstrings and suggest templates based on the code itself
+    Finds missing docstrings and suggest templates based on the code itself
   </li>
   <li class="fragment fade-in">
-    Use only the Python standard library
+    Uses only the Python standard library
   </li>
 </ul>
+
+<p class="fragment">
+  <em>Tools may exist that do this already, but the point is to learn how to use the AST.</em>
+</p>
 
 ---
 
