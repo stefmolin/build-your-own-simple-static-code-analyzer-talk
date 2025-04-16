@@ -1179,27 +1179,36 @@ Suggestions are great, but we can do better.
     In the <code>_handle_missing_docstring()</code> method, we will add a node to the function body with the docstring:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
-    It will be an <code>ast.Expr</code> node with an <code>ast.Constant</code> node containing the docstring itself:
+    In order to properly indent the docstring, we need to add one additional level of indentation beyond what the function definition has (<code>col_offset</code>):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
-    The docstring AST node will be first entry in the <code>ast.FunctionDef</code> node's <code>body</code> field:
+    The AST node we inject will be an <code>ast.Expr</code> node with an <code>ast.Constant</code> node containing the docstring itself:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="4">
-    Since AST nodes all store references to their line numbers in the source code, we fix them after making insertions:
+    The <code>suggest_docstring()</code> function includes the surrounding <code>"""</code>, so we need to remove them (<code>suggestion[3:-3]</code>):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="5">
-    The <code>_visit_helper()</code> method will call <code>_handle_missing_docstring()</code> and make sure we perform a complete traversal:
+    We also need to add the indent on the final line (<code>+ prefix</code>) since <code>textwrap.indent()</code> won't indent a blank line with nothing after it:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="6">
-    Note that we now return the node. If we don't return it, the node will be removed from the AST:
+    The docstring AST node will be first entry in the <code>ast.FunctionDef</code> node's <code>body</code> field:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="7">
+    Since AST nodes all store references to their line numbers in the source code, which we didn't specify, we fix them for all nodes in this subtree after making the insertion:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="8">
+    The <code>_visit_helper()</code> method will call <code>_handle_missing_docstring()</code> and make sure we perform a complete traversal:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="9">
+    Note that we now return the node. If we don't return it, the node will be removed from the AST:
+  </p>
+  <p class="fragment fade-in-then-out" data-fragment-index="10">
     For this example, we will just visit function nodes since we only have docstring suggestions for those:
   </p>
 </div>
 
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-42|3|5-23|9-18|20|21|25-32|31|33-41" data-fragment-index="0">
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-42|3|5-23|10|11-18|14|13-16|20|21|25-32|31|33-41" data-fragment-index="0">
 from textwrap import indent
 
 class DocstringTransformer(ast.NodeTransformer):
@@ -1213,7 +1222,7 @@ class DocstringTransformer(ast.NodeTransformer):
             docstring_node = ast.Expr(
                 ast.Constant(
                     indent(
-                        suggestion[3:-3] + f'{prefix}',
+                        suggestion[3:-3] + prefix,
                         prefix,
                     )
                 )
