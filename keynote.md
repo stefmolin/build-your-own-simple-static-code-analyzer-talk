@@ -1254,7 +1254,7 @@ class DocstringTransformer(ast.NodeTransformer):
 
 ---
 
-We can use the `ast.unparse()` function to convert from an AST back into source code, but note that formatting may be a little different:
+We can use the `ast.unparse()` function to convert from an AST back into source code, but note that formatting may be a little different and, since comments are not represented in the AST, they will not be preserved:
 
 ```pycon [highlight-lines="1-3|4-36|6-20|22-36"][class="hide-line-numbers"]
 >>> transformer = DocstringTransformer()
@@ -1294,6 +1294,10 @@ class Greeter:
         """
         return f"Hello, {name}{'!' * self.enthusiasm}"
 ```
+
+[notes]
+- If you are going to overwrite your file, make sure you have it in version control.
+- Since formatting will change, be sure to use linters and formatters on your project.
 
 ---
 
