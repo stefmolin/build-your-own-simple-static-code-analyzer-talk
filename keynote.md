@@ -134,7 +134,10 @@ class Greeter:
 
 <ul>
   <li class="fragment fade-in">
-    Created when compiling source code into byte code (necessary to run it)
+    Created by the parser as an intermediary step when
+    <a href="https://github.com/python/cpython/blob/main/InternalDocs/compiler.md">
+      compiling source code into byte code
+    </a> (necessary to run it)
   </li>
   <li class="fragment fade-in">
     Only syntactically-correct Python code can be parsed into an AST
