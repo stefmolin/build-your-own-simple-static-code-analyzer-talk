@@ -790,6 +790,8 @@ def _extract_positional_args(
 
 ###### Example
 
+Including a `/` in the function definition requires that the arguments preceding it (`a`, here) be passed by position (*e.g.*, `func('?')` would work, but `func(a='?')` would raise an exception):
+
 ```pycon [highlight-lines="3|1-5|6-8"][class="hide-line-numbers"]
 >>> _extract_positional_args(
 ...     ast.parse(
@@ -844,15 +846,17 @@ def _extract_star_args(arguments: ast.arguments) -> list[dict]:
 
 ###### Example
 
+Note that, while it is convention, there is no requirement to use `*args` and `**kwargs`, so our code needs to handle it:
+
 ```pycon [highlight-lines="3|1-5|6-9"][class="hide-line-numbers"]
 >>> _extract_star_args(
 ...     ast.parse(
-...         'def func(*args, **kwargs): pass'
+...         'def func(*extra_args, **extra_kwargs): pass'
 ...     ).body[0].args
 ... )
-[{'name': '*args', 'type': '__type__',
+[{'name': '*extra_args', 'type': '__type__',
   'default': &lt;object at 0x107c5e630&gt;},
- {'name': '**kwargs', 'type': '__type__',
+ {'name': '**extra_kwargs', 'type': '__type__',
   'default': &lt;object at 0x107c5e630&gt;}]
 ```
 
@@ -899,6 +903,8 @@ def _extract_keyword_args(
 
 ###### Example
 
+Including a `*` in the function definition requires that the arguments following it (`a` and `b`, here) be passed by name (*e.g.*, `func(a='?')` would work, but `func('?')` would raise an exception):
+
 ```pycon [highlight-lines="3|1-5|6-8"][class="hide-line-numbers"]
 >>> _extract_keyword_args(
 ...     ast.parse(
@@ -938,7 +944,7 @@ def extract_arguments(arguments: ast.arguments) -> tuple[dict]:
 Running this on the `Greeter.greet()` method extracts the `name` argument (ignoring `self`):
 
 ```
-[{'name': 'name', 'type': 'str', 'default': 'World'}]
+({'name': 'name', 'type': 'str', 'default': 'World'},)
 ```
 
 <p class="fragment">Now, we need the return type.</p>
