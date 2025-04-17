@@ -137,7 +137,7 @@ class Greeter:
 
 <ul>
   <li class="fragment fade-in">
-    Represents syntactically-correct Python code (cannot be generated in the presence of syntax errors)
+    Represent syntactically-correct Python code (cannot be generated in the presence of syntax errors)
   </li>
   <li class="fragment fade-in">
     Created by the parser as an intermediary step when
@@ -203,7 +203,7 @@ If the code is syntactically-correct, we get an AST back:
     The <code>ast.FunctionDef</code> node includes information about the arguments:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="6">
-    The <code>body</code> contains the AST representation of the function's code:
+    Its <code>body</code> contains the AST representation of the function's code:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="7">
     The return annotation is stored in the <code>returns</code> attribute:
@@ -304,12 +304,12 @@ Module(
 ## Let's build a simple static code analyzer
 
 <p class="fragment">
-  To learn how to use the AST, we will build a simple static code analyzer that
+  To learn how to use the AST, we will build a tool that does the following:
 </p>
 
 <ul>
   <li class="fragment fade-in">
-    Finds missing docstrings and suggest templates based on the code itself
+    Finds missing docstrings and suggests templates based on the code itself
   </li>
   <li class="fragment fade-in">
     Uses only the Python standard library
@@ -499,7 +499,7 @@ We aren't visiting the list of AST nodes in the `ast.Module` node's `body` field
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-in-then-out" data-fragment-index="0">
-    Add the <code>_visit_helper()</code> method, which checks the docstring and then continues the traversal:
+    We add the <code>_visit_helper()</code> method, which checks the docstring and then continues the traversal:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
     Calling <code>generic_visit()</code> on each node we check docstrings for ensures we continue the traversal:
@@ -674,12 +674,14 @@ greet.Greeter.greet is missing a docstring
 
 ## Suggesting docstring templates
 
-`ast.FunctionDef` and `ast.AsyncFunctionDef` nodes have information that often ends up in the docstring:
+<p class="fragment">
+  <code>ast.FunctionDef</code> and <code>ast.AsyncFunctionDef</code> nodes have information that often ends up in the docstring:
+</p>
 
 <ul>
   <li class="fragment"><code>args</code>: Argument names, types, and defaults</li>
   <li class="fragment"><code>returns</code>: Return type annotation (if present)</li>
-  <li class="fragment"><code>body</code>: AST of the function body which can be used to infer return types, as well as whether the function raises any exceptions (out of scope)</li>
+  <li class="fragment"><code>body</code>: AST of the function body, which can be used to infer return types, as well as whether the function raises any exceptions (out of scope)</li>
 </ul>
 
 <p class="fragment">We will focus on fully-typed code for this keynote.</p>
@@ -831,7 +833,7 @@ Including a `/` in the function definition requires that the arguments preceding
     Unlike the other arguments, these are either <code>None</code> or a single <code>ast.arg</code> node, so we don't need to loop over the values:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
-    If that argument is present in the function signature, we will capture the details we need for the docstring:
+    If that argument is present in the function definition, we will capture the details we need for the docstring:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
     Otherwise, we will record it as <code>None</code>, so that we can filter this out when we make the docstring:
@@ -862,7 +864,7 @@ def _extract_star_args(arguments: ast.arguments) -> list[dict]:
 
 ###### Example
 
-Note that, while it is convention, there is no requirement to use `*args` and `**kwargs`, so our code needs to handle it:
+Note that, while it is convention, there is no requirement that we name these arguments `*args` and `**kwargs`, so our code needs to correctly extract the name:
 
 ```pycon [highlight-lines="3|1-5|6-9"][class="hide-line-numbers"]
 >>> _extract_star_args(
@@ -938,7 +940,7 @@ Including a `*` in the function definition requires that the arguments following
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    We ensure that the order of the arguments in the docstring matches their order in the function signature:
+    We ensure that the order of the arguments in the docstring matches their order in the function definition:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     First, we include the positional arguments with the positional-only ones preceding the ones that can be passed by position or name:
@@ -996,7 +998,7 @@ returns=Name(id='str', ctx=Load())
 
 #### Extracting returns information in a docstring-friendly format
 
-Here, we simplify by assuming that the return notation is provided and only handling the cases of `Constant` and `Name` nodes:
+Here, we simplify by assuming that the return type annotation is provided and only handling the cases of `ast.Constant` and `ast.Name` nodes:
 
 ```python [highlight-lines="1-9|3-4|6-7"][class="hide-line-numbers"]
 def _extract_return_annotation(node: ast.AST) -> str:
@@ -1036,10 +1038,10 @@ __return_type__
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    The <code>suggest_docstring()</code> function will construct docstrings based function nodes in the AST:
+    The <code>suggest_docstring()</code> function will construct docstrings based on function nodes in the AST:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
-    It formats the output from the <code>_extract_arguments()</code> function into a parameters section:
+    It formats the output from the <code>_extract_arguments()</code> function into a parameters section (if the function has parameters):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
     Next, it uses the output from the <code>_extract_returns()</code> function to make a returns section:
@@ -1091,7 +1093,7 @@ def suggest_docstring(
 
 #### Updating the `DocstringVisitor`
 
-In `_detect_missing_docstring()`, we now suggest a docstring for functions that are missing one:
+In the `_detect_missing_docstring()` method, we now suggest a docstring for functions that are missing one:
 
 ```python [highlight-lines="8-27|19-27"][class="hide-line-numbers"]
 class DocstringVisitor(ast.NodeVisitor):
@@ -1203,7 +1205,7 @@ Suggestions are great, but we can do better.
 
 <div class="r-stack r-stack-left">
   <p class="fragment fade-out" data-fragment-index="0">
-    Instead of reporting that docstrings are missing, we will add docstring templates to the code:
+    Instead of suggesting docstrings where they are missing, we will add docstring templates to the code:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
     To edit the AST, we need to subclass <code>ast.NodeTransformer</code>, which inherits from <code>ast.NodeVisitor</code>, this time:
