@@ -30,24 +30,35 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout content
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          path: content
+
+      - name: Checkout thank-you-slide
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: stefmolin/ezslides
+          token: ${{ secrets.SLIDES_PUBLISHING_TOKEN }}
+          path: thank-you-slide
+
+      - name: Checkout ezslides
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+        with:
+          repository: stefmolin/ezslides
+          token: ${{ secrets.SLIDES_PUBLISHING_TOKEN }}
+          path: ezslides
+      - name: Install ezslides
+        run: pip install ezslides
+      - name: Package files
+        run: ezslides -o slides/${{ secrets.PREVIEW }} keynote.md
+
       - name: Setup Pages
         uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5.0.0
-      - name: Package files
-        # TODO: this logic may vary depending on structure of the assets it may make sense to have all repos define a script that gets called here
-        run: | # TODO: install ezslides, convert to html, then copy the html, css, and media files to slides directory
-          mkdir -p slides/media/uml && \
-            mkdir -p slides/media/snippets && \
-            cp index.html slides/ && \
-            cp media/*.png slides/media/ && \
-            cp media/*.gif slides/media/ && \
-            cp media/uml/*.svg slides/media/uml/ && \
-            cp media/snippets/*.svg slides/media/snippets/;
       - name: Upload artifact
         uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3.0.1
         with:
-          path: 'slides'
+          path: slides
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e  # v4.0.5
