@@ -47,6 +47,7 @@ highlightjs:
   theme: stackoverflow-light
 fontawesome:
   version: 6.7.2
+thank_you_slide: ../thank-you-slide/thank-you.html
 ---
 
 [id=bio]
