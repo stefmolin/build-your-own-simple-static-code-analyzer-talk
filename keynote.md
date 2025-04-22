@@ -572,7 +572,7 @@ greet is missing a docstring
 
 `greet` could be the `greet()` method or the `greet` module, but `greet.Greeter.greet` can only be one:
 
-```
+```plaintext
 greet is missing a docstring
 ```
 
