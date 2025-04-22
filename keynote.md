@@ -559,7 +559,11 @@ greet is missing a docstring
 ---
 
 <div class="center">
-  <img width="85%" src="./media/traversal-animation.gif" alt="Complete traversal of the AST for greet.py visualized with Graphviz"/>
+  <video width="80%" controls>
+    <source src="./media/traversal-animation.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <!-- <img width="85%" src="./media/traversal-animation.gif" alt="Complete traversal of the AST for greet.py visualized with Graphviz"/> -->
 </div>
 
 ---
@@ -653,9 +657,9 @@ class DocstringVisitor(ast.NodeVisitor):
 [notes]
 ### Other uses for stacks
 
-- determine whether a `ast.FunctionDef` node is a standalone function or method of a class
+- determine whether an `ast.FunctionDef` node is a standalone function or method of a class
 - detect when a function or class is nested
-- check whether a function definition has a `return` statement (and therefore should be documented), despite not having a return type annotation
+- check whether a function definition has a `return` statement (and therefore should be documented), despite not having a return type annotation, using a `visit_Returns()` method
 
 
 ---
