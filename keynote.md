@@ -1006,7 +1006,7 @@ returns=Name(id='str', ctx=Load())
 Here, we simplify by assuming that the return type annotation is provided and only handling the cases of `ast.Constant` and `ast.Name` nodes:
 
 ```python [highlight-lines="1-9|3-4|6-7"][class="hide-line-numbers"]
-def _extract_return_annotation(node: ast.AST) -> str:
+def extract_return_annotation(node: ast.AST) -> str:
 
     if isinstance(node, ast.Constant):
         return str(node.value)
@@ -1046,10 +1046,10 @@ __return_type__
     The <code>suggest_docstring()</code> function will construct docstrings based on function nodes in the AST:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
-    It formats the output from the <code>_extract_arguments()</code> function into a parameters section (if the function has parameters):
+    It formats the output from the <code>extract_arguments()</code> function into a parameters section (if the function has parameters):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
-    Next, it uses the output from the <code>_extract_returns()</code> function to make a returns section:
+    Next, it uses the output from the <code>extract_return_annotation()</code> function to make a returns section:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
     Everything is then combined with some placeholders and triple quotes to become a docstring template:
@@ -1076,7 +1076,7 @@ def suggest_docstring(
         args = []
 
     returns = (
-        _extract_return_annotation(node.returns)
+        extract_return_annotation(node.returns)
         + '\n    __description__'
     )
 
