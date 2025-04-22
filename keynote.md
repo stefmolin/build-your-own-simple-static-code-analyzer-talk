@@ -56,8 +56,8 @@ thank_you_slide: ../thank-you-slide/thank-you.html
 - 👩🏻‍💻 Software engineer at Bloomberg in NYC
 - ✨ Core developer of [numpydoc](https://github.com/numpy/numpydoc) and creator of [numpydoc's pre-commit hook](https://numpydoc.readthedocs.io/en/latest/validation.html#docstring-validation-using-pre-commit-hook), which uses static code analysis
 - ✍ Author of "[Hands-On Data Analysis with Pandas](https://stefaniemolin.com/books/Hands-On-Data-Analysis-with-Pandas-2nd-edition/)"
-- 🎓 Bachelor's in operations research from Columbia University
-- 🎓 Master's in computer science (ML specialization) from Georgia Tech
+- 🎓 Bachelor's degree in operations research from Columbia University
+- 🎓 Master's degree in computer science from Georgia Tech
 
 [notes]
 This is a highly-technical keynote, but don't worry about getting lost or trying to take pictures of the code as its up on the screen because the slides are self-contained, and I have made them publicly-available on my website.
@@ -112,7 +112,7 @@ This is a highly-technical keynote, but don't worry about getting lost or trying
 
 [data-transition=slide-in fade-out]
 
-Let's see what this code snippet (`greet.py`) looks like represented as an AST:
+Let's see what this code snippet (`greet.py`) looks like when represented as an AST:
 
 ```python
 class Greeter:
@@ -278,25 +278,25 @@ Module(
 
 <ul>
   <li class="fragment fade-in">
-    Linters and formatters like <code>ruff</code> (Rust) and <code>black</code> (Python)
+    Linters and formatters, like <code>ruff</code> (Rust) and <code>black</code> (Python)
   </li>
   <li class="fragment fade-in">
-    Documentation tools like <code>sphinx</code> and the <code>numpydoc-validation</code> pre-commit hook
+    Documentation tools, like <code>sphinx</code> and the <code>numpydoc-validation</code> pre-commit hook
   </li>
   <li class="fragment fade-in">
-    Automatic Python syntax upgrade tools like <code>pyupgrade</code>
+    Automatic Python syntax upgrade tools, like <code>pyupgrade</code>
   </li>
   <li class="fragment fade-in">
-    Type checkers like <code>mypy</code>
+    Type checkers, like <code>mypy</code>
   </li>
   <li class="fragment fade-in">
-    Code security tools like <code>bandit</code>
+    Code security tools, like <code>bandit</code>
   </li>
   <li class="fragment fade-in">
-    Code and testing coverage tools like <code>vulture</code> and <code>coverage.py</code>
+    Code and testing coverage tools, like <code>vulture</code> and <code>coverage.py</code>
   </li>
   <li class="fragment fade-in">
-    Testing frameworks that instrument your code or generate tests based on it like <code>hypothesis</code> and <code>pytest</code>
+    Testing frameworks that instrument your code or generate tests based on it, like <code>hypothesis</code> and <code>pytest</code>
   </li>
 </ul>
 
@@ -388,7 +388,7 @@ class Greeter:
     Only <code>ast.Module</code>, <code>ast.ClassDef</code>, <code>ast.FunctionDef</code>, and <code>ast.AsyncFunctionDef</code> nodes can have docstrings:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
-    <code>ast.get_docstring(node)</code> returns the docstring of <code>node</code> or <code>None</code>, if there isn't one:
+    If there is one, <code>ast.get_docstring(node)</code> returns the docstring of <code>node</code>; otherwise, it returns <code>None</code>:
   </p>
 </div>
 
@@ -490,7 +490,7 @@ We aren't visiting the list of AST nodes in the `ast.Module` node's `body` field
 <ul>
   <li class="fragment">Defined on base class <code>ast.NodeVisitor</code></li>
   <li class="fragment">Visits child nodes by calling <code>visit()</code> on any nodes returned from <code>ast.iter_fields()</code></li>
-  <li class="fragment">Called automatically for node types we didn't create methods for</li>
+  <li class="fragment">Called automatically for node types for which we didn't create methods</li>
 </ul>
 
 
@@ -503,7 +503,7 @@ We aren't visiting the list of AST nodes in the `ast.Module` node's `body` field
     We add the <code>_visit_helper()</code> method, which checks the docstring and then continues the traversal:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
-    Calling <code>generic_visit()</code> on each node we check docstrings for ensures we continue the traversal:
+    Calling <code>generic_visit()</code> on each node for which we check docstrings for ensures we continue the traversal:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="2">
     Now, we switch to calling <code>_visit_helper()</code> whenever we visit module, class, or function nodes:
@@ -685,7 +685,7 @@ greet.Greeter.greet is missing a docstring
   <li class="fragment"><code>body</code>: AST of the function body, which can be used to infer return types, as well as whether the function raises any exceptions (out of scope)</li>
 </ul>
 
-<p class="fragment">We will focus on fully-typed code for this keynote.</p>
+<p class="fragment">For this keynote, we will focus on fully-typed code.</p>
 
 ---
 
@@ -944,7 +944,7 @@ Including a `*` in the function definition requires that the arguments following
     We ensure that the order of the arguments in the docstring matches their order in the function definition:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="0">
-    First, we include the positional arguments with the positional-only ones preceding the ones that can be passed by position or name:
+    First, we include the positional arguments, with the positional-only ones preceding the ones that can be passed by position or name:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="1">
     Next, we process the starred arguments. However, we only check whether <code>varargs</code> is present at this time, because it belongs in the positional arguments group:
@@ -1218,7 +1218,7 @@ Suggestions are great, but we can do better.
     In order to properly indent the docstring, we need to add one additional level of indentation beyond what the function definition has (<code>col_offset</code>):
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="3">
-    The AST node we inject will be an <code>ast.Expr</code> node with an <code>ast.Constant</code> node inside containing the docstring itself:
+    The AST node we inject will be an <code>ast.Expr</code> node, with an <code>ast.Constant</code> node inside containing the docstring itself:
   </p>
   <p class="fragment fade-in-then-out" data-fragment-index="4">
     The <code>suggest_docstring()</code> function includes the surrounding <code>"""</code>, so we need to remove them (<code>suggestion[3:-3]</code>):
@@ -1340,7 +1340,7 @@ class Greeter:
 ## Potential next steps
 
 <ul>
-  <li class="fragment">Have <code>DocstringVisitor</code> and <code>DocstringTransformer</code> handle reading in the file and generating the AST</li>
+  <li class="fragment">Have <code>DocstringVisitor</code> and <code>DocstringTransformer</code> read in the file and generate the AST</li>
   <li class="fragment">Infer whether a function has a return statement in the absence of a return type annotation</li>
   <li class="fragment">Have <code>DocstringTransformer</code> convert the modified AST back to source code and save it to a file</li>
   <li class="fragment">
@@ -1356,7 +1356,7 @@ class Greeter:
 
 ## Reference implementation
 
-All examples herein were based on my project, **Docstringify**:
+All examples herein were based on my open source project, **Docstringify**:
 
 - Repository: <https://github.com/stefmolin/docstringify>
 - PyPI: `python -m pip install docstringify`
