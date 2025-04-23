@@ -803,7 +803,7 @@ def _extract_positional_args(
         for arg, default in zip_longest(
             reversed([*arguments.posonlyargs, *arguments.args]),
             reversed(arguments.defaults),
-            fillvalue=NO_DEFAULT
+            fillvalue=NO_DEFAULT,
         )
         if arg.arg not in ['self', 'cls']
     ][::-1]
