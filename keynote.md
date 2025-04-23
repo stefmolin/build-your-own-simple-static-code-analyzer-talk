@@ -720,11 +720,11 @@ class Greeter:
 |---|---|---|
 |<code>posonlyargs</code>|<code>list[ast.arg]</code>|positional-only arguments|
 |<code>args</code>|<code>list[ast.arg]</code>|arguments that can be passed positionally or by keyword|
-|<code>vararg</code>|<code>Optional[ast.arg]</code>|<code>*args</code>|
+|<code>vararg</code>|<code>ast.arg&vert;None</code>|<code>*args</code>|
 |<code>kwonlyargs</code>|<code>list[ast.arg]</code>|keyword-only arguments|
-|<code>kw_defaults</code>|<code>list[ast.arg]</code>|default values for keyword-only arguments, where <code>None</code> means the argument is required|
-|<code>kwarg</code>|<code>Optional[ast.arg]</code>|<code>**kwargs</code>|
-|<code>defaults</code>|<code>list[ast.arg]</code>|default values for last <code>n</code> positional arguments|
+|<code>kw_defaults</code>|<code>list[ast.AST&vert;None]</code>|default values for keyword-only arguments, where <code>None</code> means the argument is required|
+|<code>kwarg</code>|<code>ast.arg&vert;None</code>|<code>**kwargs</code>|
+|<code>defaults</code>|<code>list[ast.AST]</code>|default values for last <code>n</code> positional arguments|
 
 
 ---
