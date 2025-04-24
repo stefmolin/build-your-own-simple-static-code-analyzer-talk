@@ -846,8 +846,10 @@ Including a `/` in the function definition requires that the arguments preceding
 </div>
 
 <pre>
-    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-16|14-15|3-12|13" data-fragment-index="0">
-def _extract_star_args(arguments: ast.arguments) -> list[dict]:
+    <code data-trim class="language-python hide-line-numbers" data-line-numbers="1-18|16-17|5-14|15" data-fragment-index="0">
+def _extract_star_args(
+    arguments: ast.arguments
+) -> list[dict | None]:
     return [
         {
             'name': (
