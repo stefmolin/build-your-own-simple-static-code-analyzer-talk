@@ -10,9 +10,3 @@ repos:
     rev: 0.6.2
     hooks:
       - id: strip-exif
-
-  - repo: https://github.com/stefmolin/modification-timekeeper
-    rev: 0.1.2
-    hooks:
-      - id: modification-timekeeper
-        args: [--after-key=published]
