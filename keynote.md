@@ -302,6 +302,14 @@ Module(
   </li>
 </ul>
 
+[notes]
+Other potential use cases:
+
+- Metaprogramming
+- Updating syntax after upgrading dependency
+- Analyzing code structure
+- Forbidding certain imports or types of imports (like not allowing relative imports or `import *`)
+
 ---
 
 ## Let's build a simple static code analyzer
