@@ -173,7 +173,7 @@ If the code is syntactically-correct, we get an AST back:
 >>> import ast
 >>> tree = ast.parse(source_code)
 >>> print(type(tree))
-&lt;class 'ast.Module'>
+<class 'ast.Module'>
 ```
 
 ---
@@ -832,7 +832,7 @@ Including a `/` in the function definition requires that the arguments preceding
 ...     ).body[0].args
 ... )
 [{'name': 'a', 'type': 'str',
-  'default': &lt;object at 0x107c5e620&gt;},
+  'default': <object at 0x107c5e620>},
  {'name': 'b', 'type': 'int', 'default': 3}]
 ```
 
@@ -890,9 +890,9 @@ Note that, while it is convention, there is no requirement that we name these ar
 ...     ).body[0].args
 ... )
 [{'name': '*extra_args', 'type': '__type__',
-  'default': &lt;object at 0x107c5e630&gt;},
+  'default': <object at 0x107c5e630>},
  {'name': '**extra_kwargs', 'type': '__type__',
-  'default': &lt;object at 0x107c5e630&gt;}]
+  'default': <object at 0x107c5e630>}]
 ```
 
 ---
@@ -947,7 +947,7 @@ Including a `*` in the function definition requires that the arguments following
 ...     ).body[0].args
 ... )
 [{'name': 'a', 'type': 'str',
-  'default': &lt;object at 0x107c5e620&gt;},
+  'default': <object at 0x107c5e620>},
  {'name': 'b', 'type': 'int', 'default': 3}]
 ```
 
