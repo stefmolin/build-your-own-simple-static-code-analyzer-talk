@@ -169,7 +169,7 @@ class Greeter:
 
 If the code is syntactically-correct, we get an AST back:
 
-```
+```pycon
 >>> import ast
 >>> tree = ast.parse(source_code)
 >>> print(type(tree))
@@ -284,6 +284,9 @@ Module(
   </li>
   <li class="fragment fade-in">
     Automatic Python syntax upgrade tools, like <code>pyupgrade</code>
+  </li>
+  <li class="fragment fade-in">
+    Next-generation notebooks, like <code>marimo</code>
   </li>
   <li class="fragment fade-in">
     Type checkers, like <code>mypy</code>
