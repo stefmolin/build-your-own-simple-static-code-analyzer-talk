@@ -34,7 +34,7 @@ favicon: /favicon
 intro_slide:
   title: Build Your Own (Simple) Static Code Analyzer
 reveal:
-  version: 5.1.0
+  version: 5.2.1
   theme: simple
   config:
     controls: false
@@ -42,10 +42,10 @@ reveal:
     history: true
     pdfSeparateFragments: false
 highlightjs:
-  version: 11.9.0
+  version: 11.11.1
   theme: stackoverflow-light
 fontawesome:
-  version: 6.7.2
+  version: 7.0.1
 thank_you_slide: ../thank-you-slide/thank-you.html
 ---
 
