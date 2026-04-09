@@ -41,9 +41,10 @@ reveal:
     hash: true
     history: true
     pdfSeparateFragments: true
-highlightjs:
-  version: 11.11.1
-  theme: stackoverflow-light
+  plugins:
+    highlight:
+      theme: stackoverflow-light
+    notes:
 fontawesome:
   version: 7.0.1
 thank_you_slide: ../thank-you-slide/thank-you.html
