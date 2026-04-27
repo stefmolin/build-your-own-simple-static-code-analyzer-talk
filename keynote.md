@@ -1389,7 +1389,7 @@ All examples herein were based on my open source project, **Docstringify**:
 [id=related-content]
 ## Related content
 
-My "[Process, Analyze, and Transform Python Code with ASTs](https://stefaniemolin.com/workshops/ast-workshop/)" workshop is another introduction to using the AST. Instead of working with docstrings and type annotations, it focuses on implementing linting and refactoring tasks with ASTs, using just the standard library.
+My "[Process, Analyze, and Transform Python Code with ASTs](https://stefaniemolin.com/workshops/ast-workshop/)" workshop is another introduction to using ASTs. Instead of working with docstrings and type annotations, it focuses on implementing linting and refactoring tasks with ASTs, using just the standard library.
 
 - [Slides](https://stefaniemolin.com/ast-workshop/#/)
 - [Repository](https://github.com/stefmolin/ast-workshop)
