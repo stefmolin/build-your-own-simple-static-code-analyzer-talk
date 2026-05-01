@@ -54,7 +54,7 @@ jobs:
         run: ezslides content/keynote.md
 
       - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f  # v6.3.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6.4.0
       - name: Disable AppArmor # this is necessary for puppeteer to work
         run: echo 0 | sudo tee /proc/sys/kernel/apparmor_restrict_unprivileged_userns
       - name: Checkout reveal-pdf-generator
